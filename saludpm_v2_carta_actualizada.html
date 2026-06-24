@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLM — Cartas Licencias Médicas DESAM</title>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root { --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body { background-color: #ffffff; color: #333333; }
+    .app{font-family:var(--font-sans);padding:1rem 0;max-width:100%}
+    .header{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:0.5px solid #ccc}
+    .logo-app{width:38px;height:38px;background:#1e4d8c;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;flex-shrink:0}
+    .header h1{font-size:17px;font-weight:500;color:#222}
+    .header p{font-size:12px;color:#666}
+    .tabs{display:flex;gap:0;margin-bottom:1.25rem;border-bottom:0.5px solid #ccc}
+    .tab{padding:8px 14px;font-size:13px;color:#666;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .15s;display:flex;align-items:center;gap:6px}
+    .tab:hover{color:#222}
+    .tab.active{color:#1e4d8c;border-bottom-color:#1e4d8c;font-weight:500}
+    .panel{display:none}.panel.active{display:block}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;font-size:13px;font-weight:500;border-radius:4px;cursor:pointer;border:0.5px solid #ccc;background:#fff;color:#333;transition:all .15s}
+    .btn:hover{background:#f5f5f5}
+    .btn-primary{background:#1e4d8c;color:#fff;border-color:#1e4d8c}.btn-primary:hover{background:#163d70;color:#fff}
+    .btn-success{background:#0f6e56;color:#fff;border-color:#0f6e56}.btn-success:hover{background:#085041;color:#fff}
+    .btn-danger{background:#fff;color:#a32d2d;border-color:#fcebeb;}.btn-danger:hover{background:#fcebeb}
+    .btn-sm{padding:5px 10px;font-size:12px}
+    .upload-zone{border:1.5px dashed #aaa;border-radius:8px;padding:1.75rem;text-align:center;cursor:pointer;transition:all .15s;background:#f9f9f9}
+    .upload-zone:hover{border-color:#1e4d8c;background:#f0f4f8}
+    .upload-zone i{font-size:28px;color:#666;display:block;margin-bottom:6px}
+    .upload-zone p{font-size:13px;color:#444}
+    .upload-zone small{font-size:11px;color:#888}
+    .stats-row{display:grid;gap:8px;margin:1rem 0}
+    .grid-perf { display: flex; gap: 8px; align-items: center; }
+    .stat-card{background:#f5f5f5;border-radius:4px;padding:10px;text-align:center}
+    .stat-card .num{font-size:21px;font-weight:500;color:#222}
+    .stat-card .lbl{font-size:11px;color:#666;margin-top:1px}
+    .stat-card.danger .num{color:#a32d2d}
+    .stat-card.ok .num{color:#0f6e56}
+    table.dt{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+    table.dt th{background:#b8cce4;color:#0c447c;font-weight:500;padding:7px 9px;border:1px solid #8aaecc;text-align:left; position: sticky; top: 0;}
+    table.dt td{padding:6px 9px;border:1px solid #ddd;color:#333; vertical-align: middle;}
+    table.dt tr:nth-child(even) td{background:#f9f9f9}
+    table.dt tr:hover td{background:#f0f4f8}
+    .badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500}
+    .br{background:#fcebeb;color:#a32d2d}
+    .ba{background:#eaf3de;color:#3b6d11}
+    .bo{background:#f1efe8;color:#5f5e5a}
+    .info-box{background:#f5f8fd;border-left:3px solid #1e4d8c;border-radius:0 4px 4px 0;padding:9px 13px;font-size:12px;color:#555;margin-bottom:10px}
+    .toast{background:#0f6e56;color:#fff;padding:9px 14px;border-radius:4px;font-size:13px;display:none;align-items:center;gap:8px;margin-bottom:10px;position:fixed;bottom:20px;right:20px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+    .toast.show{display:flex}
+    .actions-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+    .empty-state{text-align:center;padding:2rem;color:#888}
+    .empty-state i{font-size:32px;display:block;margin-bottom:6px}
+    .empty-state p{font-size:13px}
+    .filter-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+    .filter-row label{font-size:12px;color:#666}
+    select,input[type=text],input[type=date]{font-family:var(--font-sans);font-size:12px;padding:5px 8px;border:0.5px solid #ccc;border-radius:3px;background:#fff;color:#333}
+    .nav-footer{display:flex;justify-content:space-between;align-items:center;margin-top:1.25rem;padding-top:1rem;border-top:0.5px solid #ddd}
+    .config-grid{display:grid;gap:10px;max-width:650px}
+    .config-grid label{font-size:12px;color:#666;display:block;margin-bottom:3px}
+    .config-grid input[type=text]{width:100%}
+    .firma-preview{margin-top:14px;padding:16px;border:0.5px solid #ddd;border-radius:4px;background:#f9f9f9}
+    .sig-zone{border:1.5px dashed #aaa;border-radius:4px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;justify-content:center;background:#fff}
+    .sig-zone:hover{border-color:#1e4d8c;background:#f5f8fd}
+    .sig-zone i{font-size:22px;color:#888;display:block;margin-bottom:4px}
+    .sig-zone p{font-size:11px;color:#666}
+    .quitar-btn{font-size:11px;color:#a32d2d;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:4px}
+    .quitar-btn:hover{text-decoration:underline}
+    
+    .tbl-input { width: 100%; }
+    .tbl-input:focus { border-color: #1e4d8c; outline: none; background: #fdfdfe; }
+    .tbl-btn { padding: 5px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; background: #fff; border: 1px solid #ccc; color: #333; display: inline-flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.15s;}
+    .tbl-btn:hover { background: #f0f0f0; }
+    .tbl-btn.primary { background: #1e4d8c; color: #fff; border-color: #1e4d8c; }
+    .tbl-btn.primary:hover { background: #163d70; }
+  </style>
+</head>
+<body>
+
+<div style="max-width: 1050px; margin: 0 auto; padding: 0 15px;">
+  <div class="app">
+    <div class="header">
+      <div class="logo-app" style="padding:4px">
+        <svg viewBox="0 0 24 24" width="100%" height="100%" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
+          <path d="M3 7l9 6l9 -6" />
+          <path d="M10 12h4m-2 -2v4" stroke="#0f6e56" stroke-width="3" />
+          <path d="M10 12h4m-2 -2v4" stroke="#ffffff" stroke-width="1.5" />
+        </svg>
+      </div>
+      <div>
+        <h1>CLM — Cartas Licencias Médicas <span style="font-size:11px;background:#eaf3de;color:#3b6d11;padding:2px 7px;border-radius:20px;font-weight:400;margin-left:6px"><i class="ti ti-lock"></i> Solo local</span></h1>
+        <p>DESAM — Sistema de Notificación y Seguimiento Jurídico de Plazos</p>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="ti ti-check"></i><span id="toast-msg"></span></div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="sw('ingesta')"><i class="ti ti-upload"></i> Carga</div>
+      <div class="tab" onclick="sw('registros')"><i class="ti ti-list"></i> Registros <span id="badge-count" style="background:#b8cce4;color:#0c447c;font-size:11px;padding:1px 6px;border-radius:20px;margin-left:2px">0</span></div>
+      <div class="tab" onclick="sw('cartas')"><i class="ti ti-file-text"></i> Cartas y Envíos</div>
+      <div class="tab" onclick="sw('config')"><i class="ti ti-settings"></i> Configuración de Firma</div>
+    </div>
+
+    <div class="panel active" id="panel-ingesta">
+      <div class="info-box">
+        <strong>Formato esperado:</strong> Archivo Excel de FONASA / COMPIN. 
+      </div>
+      
+      <div class="upload-zone" onclick="document.getElementById('file-input').click()" id="drop-zone">
+        <i class="ti ti-file-spreadsheet"></i>
+        <p>Haga clic o arrastre su archivo Excel de FONASA aquí</p>
+        <small>Procesamiento 100% local — los datos no salen de su computadora</small>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="handleFile(this)" style="display:none">
+      
+      <div style="margin-top:10px;display:flex;gap:8px; justify-content:space-between">
+        <button type="button" class="btn" onclick="loadDemo()"><i class="ti ti-database"></i> Datos de ejemplo</button>
+        <button type="button" class="btn btn-danger" onclick="limpiarDatosGuardados()" id="btn-limpiar" style="display:none;"><i class="ti ti-trash"></i> Limpiar memoria (Nuevo mes)</button>
+      </div>
+
+      <div id="ingesta-stats" style="display:none">
+        <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);" id="stats-cards">
+          <div class="stat-card">
+            <div class="num" id="st-tot">0</div>
+            <div class="lbl">Total Licencias</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="num" id="st-rec">0</div>
+            <div class="lbl">Licencias Rechazadas</div>
+          </div>
+          <div class="stat-card ok">
+            <div class="num" id="st-cartas">0</div>
+            <div class="lbl">Cartas a Emitir</div>
+          </div>
+        </div>
+        <div class="nav-footer">
+          <span style="font-size:12px;color:#666">Archivo procesado y guardado en memoria local</span>
+          <button type="button" class="btn btn-primary" onclick="sw('registros')">Ver registros <i class="ti ti-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-registros">
+      <div class="filter-row">
+        <label>Mostrar:</label>
+        <select id="filter-res" onchange="renderTable()">
+          <option value="all">Todos</option>
+          <option value="RECHAZADA" selected>Solo rechazadas/reducidas</option>
+          <option value="APROBADA">Aprobadas</option>
+        </select>
+        <input type="text" id="filter-q" placeholder="Buscar RUT o nombre..." oninput="renderTable()" style="width:190px">
+      </div>
+      <div id="table-container"><div class="empty-state"><i class="ti ti-table-off"></i><p>Cargue un archivo para ver registros</p></div></div>
+      <div class="nav-footer">
+        <span id="count-label" style="font-size:12px;color:#666"></span>
+        <button type="button" class="btn btn-primary" onclick="sw('cartas')">Ir a Control de Envíos <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-cartas">
+      <div class="filter-row" style="background:#f5f8fd; padding:10px; border-radius:4px; border:0.5px solid #d0d7e5; margin-bottom:12px">
+        <label style="color:#1e4d8c; font-weight:500"><i class="ti ti-user-edit"></i> Remitente que firma:</label>
+        <select id="selector-remitente-cartas" onchange="aplicarRemitenteDesdeCartas()" style="min-width:250px"></select>
+        <button type="button" class="btn btn-sm" onclick="sw('config')" style="margin-left:auto"><i class="ti ti-settings"></i> Configurar firmas</button>
+      </div>
+      
+      <h3 style="font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-end;">
+        <span><i class="ti ti-list-check" style="color:#1e4d8c"></i> Control Jurídico de Despacho y Plazos</span>
+        <button type="button" class="btn btn-sm" onclick="expTodas()"><i class="ti ti-files"></i> Descargar TODAS las cartas (PDF)</button>
+      </h3>
+      
+      <div id="cartas-table-container" style="max-height: 420px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; background:#fff">
+        <div class="empty-state"><i class="ti ti-file-off"></i><p>Cargue datos para ver las cartas a emitir</p></div>
+      </div>
+      
+      <div id="carta-preview-section" style="display:none; border-top:2px solid #eee; padding-top:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-size:14px;"><i class="ti ti-eye" style="color:#0f6e56"></i> Vista previa carta seleccionada</h3>
+          <div class="actions-bar" style="margin:0">
+            <button type="button" class="btn btn-sm" onclick="copiar()"><i class="ti ti-copy"></i> Copiar texto (Outlook)</button>
+            <button type="button" class="btn btn-success btn-sm" onclick="expPDF()"><i class="ti ti-download"></i> Descargar este PDF</button>
+          </div>
+        </div>
+        <div id="carta-container"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-config">
+      <div style="margin-bottom: 1.25rem; padding: 14px; background: #f5f8fd; border-left: 3px solid #1e4d8c; border-radius: 0 4px 4px 0; max-width: 650px;">
+        <label style="font-size: 12px; font-weight: 500; color: #1e4d8c; display: block; margin-bottom: 6px;"><i class="ti ti-users"></i> Perfiles de Remitentes Guardados</label>
+        <div class="grid-perf">
+          <select id="selector-perfiles" onchange="cargarPerfilRemitente()" style="flex: 1;">
+            <option value="">— Seleccionar perfil guardado —</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-primary" onclick="guardarPerfilRemitente()"><i class="ti ti-device-floppy"></i> Guardar perfil actual</button>
+          <button type="button" class="btn btn-sm" onclick="eliminarPerfilRemitente()" style="color: #a32d2d; border-color: #fcebeb;"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+
+      <div class="config-grid">
+        <div><label>Nombre del remitente</label><input type="text" id="cfg-nombre" value="Johana Aguila"></div>
+        <div><label>Cargo</label><input type="text" id="cfg-cargo" value="Encargada de Licencias Médicas"></div>
+        <div><label>Unidad / Institución</label><input type="text" id="cfg-inst" value="DESAM — Departamento de Salud Municipal"></div>
+        <div><label>Correo de contacto</label><input type="text" id="cfg-mail" value="asistenciaylicenciasmedicas@saludpm.cl"></div>
+
+        <div style="margin-top:4px">
+          <label style="margin-bottom:6px">Autenticación gráfica (Opcional)</label>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-width: 420px;">
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <div class="sig-zone" onclick="document.getElementById('firma-input').click()" id="sig-zone" style="height:95px"><i class="ti ti-writing"></i><p>1. Subir Firma</p></div>
+              <div style="text-align:center"><span class="quitar-btn" onclick="borrarFirma()"><i class="ti ti-trash"></i> Quitar firma</span></div>
+              <input type="file" id="firma-input" accept="image/*" onchange="handleFirma(this)" onclick="this.value=null" style="display:none">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <div class="sig-zone" onclick="document.getElementById('timbre-input').click()" id="stamp-zone" style="height:95px"><i class="ti ti-stamp"></i><p>2. Subir Timbre</p></div>
+              <div style="text-align:center"><span class="quitar-btn" onclick="borrarTimbre()"><i class="ti ti-trash"></i> Quitar timbre</span></div>
+              <input type="file" id="timbre-input" accept="image/*" onchange="handleTimbre(this)" onclick="this.value=null" style="display:none">
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-top:8px">
+          <button type="button" class="btn btn-primary" onclick="guardar()"><i class="ti ti-check"></i> Aplicar remitente a las cartas actuales</button>
+        </div>
+      </div>
+
+      <div class="firma-preview" id="firma-preview" style="display:none">
+        <p style="font-size:11px;color:#888;margin-bottom:10px">Vista previa del bloque de firma (Inmune a deformación de Outlook):</p>
+        <div id="box-sello-renderizado"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+var allRecs=[], rechazadas=[], grouped={}, funcList=[], curIdx=-1;
+var firmaB64='', timbreB64='', selloUnificadoB64='';
+
+var perfilesGuardados = JSON.parse(localStorage.getItem('perfilesSaludPM_v2')) || {};
+var seguimientoData = JSON.parse(localStorage.getItem('seguimientoSaludPM_v3')) || {};
+
+function sw(id){
+  var ids=['ingesta','registros','cartas','config'];
+  document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',ids[i]===id)});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='cartas') buildCartasTable();
+}
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},3000);
+}
+
+function formatearNombreChileno(str) {
+  if (!str) return '';
+  var s = str.trim().replace(/\s+/g, ' ');
+  var partes = s.split(' ');
+  if (partes.length >= 3 && s === s.toUpperCase()) {
+    var apellidos = partes.slice(0, 2).join(' ');
+    var nombres = partes.slice(2).join(' ');
+    s = nombres + ' ' + apellidos;
+  }
+  return s.toLowerCase().replace(/\b\w/g, function(l){ return l.toUpperCase() });
+}
+
+function parseFechaLocal(strIso) {
+  if(!strIso) return null;
+  var p = strIso.split('-');
+  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]), 0, 0, 0);
+}
+
+// ── MOTOR MATEMÁTICO: SUMA 5 DÍAS HÁBILES SALTÁNDOSE SÁB/DOM ──────────
+function sumar5DiasHabiles(fechaIso) {
+  var d = parseFechaLocal(fechaIso);
+  if (!d) return null;
+  var agregados = 0;
+  while (agregados < 5) {
+    d.setDate(d.getDate() + 1);
+    var w = d.getDay();
+    if (w !== 0 && w !== 6) agregados++; // 0 es Domingo, 6 es Sábado
+  }
+  return d;
+}
+
+function formatearFechaCorta(d) {
+  if(!d) return '';
+  var ms = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var dia = d.getDate();
+  return (dia < 10 ? '0' : '') + dia + '-' + ms[d.getMonth()];
+}
+
+function formatearFechaLarga(d) {
+  if(!d) return '';
+  var ms = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return d.getDate() + ' de ' + ms[d.getMonth()] + ' de ' + d.getFullYear();
+}
+
+function handleFile(inp){
+  var file=inp.files[0]; if(!file) return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var wb=XLSX.read(e.target.result,{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var rawRows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+      
+      var headerIdx = rawRows.findIndex(function(row) {
+        var hasRut = row.some(function(c) { return String(c).toUpperCase().trim() === 'RUT'; });
+        var hasRes = row.some(function(c) { return String(c).toUpperCase().trim().includes('RESOLUCI'); });
+        return hasRut && hasRes;
+      });
+
+      if (headerIdx === -1) headerIdx = 0; 
+      var headers = rawRows[headerIdx].map(function(h) { return String(h).trim(); });
+      var dataRows = rawRows.slice(headerIdx + 1);
+
+      var rows = dataRows.map(function(r) {
+        var obj = {};
+        headers.forEach(function(h, i) { obj[h] = r[i]; });
+        return obj;
+      });
+
+      var mapped=rows.map(function(row){
+        var g=function(pats){
+          for(var p of pats){
+            var k=Object.keys(row).find(function(k){return k.toLowerCase().replace(/\s/g,'').includes(p)});
+            if(k) return String(row[k]);
+          }
+          return '';
+        };
+        return {
+          nlic: g(['licencia','nlic']),
+          nombre: formatearNombreChileno(g(['nombre','funcionario'])),
+          rut: g(['rut']),
+          fi: g(['inicio']),
+          ft: g(['término','termino']),
+          dias: g(['días','dias']),
+          res: g(['resolución','resolucion','estadoproexi'])
+        };
+      }).filter(function(r){return r.nombre||r.rut});
+      
+      process(mapped, true); toast('Archivo procesado: '+mapped.length+' registros');
+    }catch(e){alert('Error al leer el archivo. Verifique que sea un Excel válido.');}
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function loadDemo(){
+  var d=[
+    {nlic:'LM-2024-001',nombre:'ROJAS FUENTES MARÍA JESÚS',rut:'12.345.678-9',fi:'15/04/2024',ft:'22/04/2024',dias:7,res:'RECHAZADA'},
+    {nlic:'LM-2024-002',nombre:'MUÑOZ SOTO CARLOS ANDRÉS',rut:'9.876.543-2',fi:'01/04/2024',ft:'05/04/2024',dias:4,res:'APROBADA'},
+    {nlic:'LM-2024-003',nombre:'ROJAS FUENTES MARÍA JESÚS',rut:'12.345.678-9',fi:'02/05/2024',ft:'08/05/2024',dias:6,res:'RECHAZADA'},
+    {nlic:'LM-2024-004',nombre:'VIDAL MORALES PATRICIA ELENA',rut:'15.234.567-K',fi:'10/05/2024',ft:'17/05/2024',dias:7,res:'RECHAZADA'}
+  ];
+  var precargados = d.map(function(x){ x.nombre = formatearNombreChileno(x.nombre); return x; });
+  process(precargados, true); toast('Datos de ejemplo cargados');
+}
+
+function process(recs, guardarEnMemoria){
+  allRecs=recs;
+  rechazadas=recs.filter(function(r){var v=String(r.res).toUpperCase();return v.includes('RECHAZADA')||v.includes('REDUCIDA');});
+  grouped={};
+  rechazadas.forEach(function(r){var k=r.rut||r.nombre;if(!grouped[k])grouped[k]={nombre:r.nombre,rut:r.rut,lics:[]};grouped[k].lics.push(r);});
+  funcList=Object.values(grouped);
+  
+  if (guardarEnMemoria) {
+    localStorage.setItem('datosExcelSaludPM', JSON.stringify(recs));
+  }
+  
+  document.getElementById('badge-count').textContent=rechazadas.length;
+  document.getElementById('st-tot').innerText = recs.length; 
+  document.getElementById('st-rec').innerText = rechazadas.length; 
+  document.getElementById('st-cartas').innerText = funcList.length; 
+  
+  document.getElementById('ingesta-stats').style.display='block';
+  document.getElementById('btn-limpiar').style.display='inline-flex';
+  renderTable();
+  buildCartasTable();
+}
+
+function limpiarDatosGuardados() {
+  if(confirm('¿Está seguro que desea borrar los datos? Las cartas pendientes y sus folios se borrarán. Hágalo solo al iniciar un nuevo mes.')){
+    localStorage.removeItem('datosExcelSaludPM');
+    localStorage.removeItem('seguimientoSaludPM_v3'); 
+    allRecs = []; rechazadas = []; funcList = []; seguimientoData = {}; curIdx = -1;
+    document.getElementById('ingesta-stats').style.display='none';
+    document.getElementById('btn-limpiar').style.display='none';
+    document.getElementById('badge-count').textContent='0';
+    renderTable(); buildCartasTable();
+    document.getElementById('carta-preview-section').style.display = 'none';
+    sw('ingesta'); toast('Memoria limpiada correctamente');
+  }
+}
+
+window.onload = function() {
+  var datosGuardados = localStorage.getItem('datosExcelSaludPM');
+  if(datosGuardados) {
+    try {
+      var recs = JSON.parse(datosGuardados);
+      process(recs, false);
+      toast('Datos de licencias recuperados');
+    } catch(e) { console.log('Error leyendo memoria de licencias'); }
+  }
+  
+  var remitenteGuardado = localStorage.getItem('remitenteActualSaludPM');
+  if(remitenteGuardado) {
+    try {
+      var p = JSON.parse(remitenteGuardado);
+      document.getElementById('cfg-nombre').value = p.nombre || '';
+      document.getElementById('cfg-cargo').value = p.cargo || '';
+      document.getElementById('cfg-inst').value = p.inst || '';
+      document.getElementById('cfg-mail').value = p.mail || '';
+      firmaB64 = p.firma || ''; timbreB64 = p.timbre || ''; selloUnificadoB64 = p.sello || '';
+      
+      if(firmaB64) document.getElementById('sig-zone').innerHTML = '<img src="'+firmaB64+'" style="max-height:45px;max-width:120px;object-fit:contain;margin:0 auto;display:block" alt="Firma">';
+      if(timbreB64) document.getElementById('stamp-zone').innerHTML = '<img src="'+timbreB64+'" style="max-height:45px;max-width:120px;object-fit:contain;margin:0 auto;display:block" alt="Timbre">';
+    } catch(e) { console.log('Error leyendo memoria de remitente'); }
+  }
+  actualizarCajaPreview(); actualizarDesplegablePerfiles();
+};
+
+function renderTable(){
+  var fRes=document.getElementById('filter-res').value;
+  var q=(document.getElementById('filter-q').value||'').toLowerCase();
+  var src=fRes==='all'?allRecs:fRes==='RECHAZADA'?rechazadas:allRecs.filter(function(r){return String(r.res).toUpperCase().includes('APROBADA')});
+  if(q) src=src.filter(function(r){return (r.rut+r.nombre).toLowerCase().includes(q)});
+  if(!src.length){document.getElementById('table-container').innerHTML='<div class="empty-state"><p>Sin resultados o no hay datos cargados</p></div>';document.getElementById('count-label').textContent='';return;}
+  var html='<div style="overflow-x:auto"><table class="dt"><thead><tr><th>N° Licencia</th><th>Nombre funcionario</th><th>RUT</th><th>F. Inicio</th><th>F. Término</th><th>Días</th><th>Resolución</th></tr></thead><tbody>';
+  src.forEach(function(r){
+    var v=String(r.res).toUpperCase();
+    var cls=v.includes('RECHAZADA')||v.includes('REDUCIDA')?'br':v.includes('APROBADA')?'ba':'bo';
+    html+='<tr><td>'+r.nlic+'</td><td>'+r.nombre+'</td><td>'+r.rut+'</td><td>'+r.fi+'</td><td>'+r.ft+'</td><td style="text-align:center">'+r.dias+'</td><td><span class="badge '+cls+'">'+r.res+'</span></td></tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('table-container').innerHTML=html;
+  document.getElementById('count-label').textContent='Mostrando '+src.length+' registros';
+}
+
+function cfg(id){return (document.getElementById(id)||{}).value||'';}
+
+function actualizarDesplegablePerfiles() {
+  var selectConfig = document.getElementById('selector-perfiles');
+  var selectCartas = document.getElementById('selector-remitente-cartas');
+  var baseOptions = '<option value="">— Perfil manual actual (Sin guardar) —</option>';
+  for (var nombrePerfil in perfilesGuardados) { baseOptions += '<option value="' + nombrePerfil + '">' + nombrePerfil + '</option>'; }
+  if(selectConfig) { selectConfig.innerHTML = baseOptions.replace('— Perfil manual actual (Sin guardar) —', '— Seleccionar perfil guardado —'); }
+  if(selectCartas) { selectCartas.innerHTML = baseOptions; }
+}
+
+function guardarPerfilRemitente() {
+  var nombre = cfg('cfg-nombre').trim();
+  if(!nombre) { alert('Escriba al menos el Nombre del remitente.'); return; }
+  var nombrePerfil = prompt('Nombre identificador para este perfil:', nombre);
+  if(!nombrePerfil) return;
+  perfilesGuardados[nombrePerfil] = { nombre: cfg('cfg-nombre'), cargo: cfg('cfg-cargo'), inst: cfg('cfg-inst'), mail: cfg('cfg-mail'), firma: firmaB64, timbre: timbreB64, sello: selloUnificadoB64 };
+  try {
+    localStorage.setItem('perfilesSaludPM_v2', JSON.stringify(perfilesGuardados));
+    actualizarDesplegablePerfiles(); document.getElementById('selector-perfiles').value = nombrePerfil; document.getElementById('selector-remitente-cartas').value = nombrePerfil;
+    toast('Perfil "' + nombrePerfil + '" guardado');
+  } catch (e) { alert('⚠️ Error al guardar perfil. Limpie datos o reduzca imágenes.'); }
+}
+
+function aplicarPerfilGlobal(seleccion) {
+  if(!seleccion || !perfilesGuardados[seleccion]) return;
+  var p = perfilesGuardados[seleccion];
+  document.getElementById('cfg-nombre').value = p.nombre || ''; document.getElementById('cfg-cargo').value = p.cargo || '';
+  document.getElementById('cfg-inst').value = p.inst || ''; document.getElementById('cfg-mail').value = p.mail || '';
+  firmaB64 = p.firma || ''; timbreB64 = p.timbre || ''; selloUnificadoB64 = p.sello || '';
+  
+  document.getElementById('sig-zone').innerHTML = firmaB64 ? '<img src="'+firmaB64+'" style="max-height:45px;max-width:120px;object-fit:contain;margin:0 auto;display:block" alt="Firma">' : '<i class="ti ti-writing"></i><p>1. Subir Firma</p>';
+  document.getElementById('stamp-zone').innerHTML = timbreB64 ? '<img src="'+timbreB64+'" style="max-height:45px;max-width:120px;object-fit:contain;margin:0 auto;display:block" alt="Timbre">' : '<i class="ti ti-stamp"></i><p>2. Subir Timbre</p>';
+  
+  var actual = { nombre: p.nombre, cargo: p.cargo, inst: p.inst, mail: p.mail, firma: firmaB64, timbre: timbreB64, sello: selloUnificadoB64 };
+  localStorage.setItem('remitenteActualSaludPM', JSON.stringify(actual));
+  actualizarCajaPreview(); if(curIdx >= 0) renderCarta();
+}
+
+function cargarPerfilRemitente() { var s = document.getElementById('selector-perfiles').value; document.getElementById('selector-remitente-cartas').value = s; aplicarPerfilGlobal(s); if(s) toast('Perfil aplicado'); }
+function aplicarRemitenteDesdeCartas() { var s = document.getElementById('selector-remitente-cartas').value; document.getElementById('selector-perfiles').value = s; aplicarPerfilGlobal(s); if(s) toast('Remitente cambiado'); }
+function eliminarPerfilRemitente() {
+  var s = document.getElementById('selector-perfiles').value; if(!s) return;
+  if(confirm('¿Eliminar perfil "' + s + '"?')) {
+    delete perfilesGuardados[s]; localStorage.setItem('perfilesSaludPM_v2', JSON.stringify(perfilesGuardados));
+    actualizarDesplegablePerfiles(); document.getElementById('selector-perfiles').value = ""; document.getElementById('selector-remitente-cartas').value = ""; toast('Perfil eliminado');
+  }
+}
+
+function generarSelloUnificado() {
+  if (!firmaB64 && !timbreB64) { selloUnificadoB64 = ''; actualizarCajaPreview(); return; }
+  var canvas = document.createElement('canvas'); var ctx = canvas.getContext('2d'); canvas.width = 240; canvas.height = 120;
+  var imgF = new Image(); var imgT = new Image(); var fLista = false, tLista = false;
+  var ensamblar = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (firmaB64) { ctx.drawImage(imgF, 5, 40, 150, 70); }
+    ctx.globalCompositeOperation = 'multiply';
+    if (timbreB64) { ctx.drawImage(imgT, 75, 5, 110, 110); }
+    selloUnificadoB64 = canvas.toDataURL('image/png');
+    actualizarCajaPreview(); if(curIdx >= 0) renderCarta();
+  };
+  if (firmaB64) { imgF.onload = function(){ fLista = true; if(!timbreB64 || tLista) ensamblar(); }; imgF.src = firmaB64; } else { fLista = true; }
+  if (timbreB64) { imgT.onload = function(){ tLista = true; if(!firmaB64 || fLista) ensamblar(); }; imgT.src = timbreB64; } else { tLista = true; }
+}
+
+function actualizarCajaPreview() {
+  document.getElementById('firma-preview').style.display = 'block';
+  var box = document.getElementById('box-sello-renderizado');
+  var imgHtml = selloUnificadoB64 ? '<img src="'+selloUnificadoB64+'" style="max-height:100px; display:block; margin-bottom:4px;" alt="Sello Institucional">' : '';
+  box.innerHTML = imgHtml + '<p style="margin:0;font-weight:600;font-size:13px;color:#222">'+cfg('cfg-nombre')+'</p><p style="margin:0;font-size:12px;color:#555">'+cfg('cfg-cargo')+'</p><p style="margin:0;font-size:12px;color:#555">'+cfg('cfg-inst')+'</p>';
+}
+
+function resizeImage(imgFile, callback) {
+  var r = new FileReader();
+  r.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas'); var maxDim = 300; var w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) { if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; } else { w = Math.round((w * maxDim) / h); h = maxDim; } }
+      canvas.width = w; canvas.height = h; var ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/png'));
+    }; img.src = e.target.result;
+  }; r.readAsDataURL(imgFile);
+}
+
+function handleFirma(inp){ if(inp.files[0]) resizeImage(inp.files[0], function(b64){ firmaB64 = b64; document.getElementById('sig-zone').innerHTML='<img src="'+b64+'" style="max-height:45px;max-width:120px;object-fit:contain;margin:0 auto;display:block" alt="Firma"><p style="font-size:10px;color:#1e4d8c;margin-top:4px">✓ Firma OK</p>'; generarSelloUnificado(); }); }
+function handleTimbre(inp){ if(inp.files[0]) resizeImage(inp.files[0], function(b64){ timbreB64 = b64; document.getElementById('stamp-zone').innerHTML='<img src="'+b64+'" style="max-height:45px;max-width:120px;object-fit:contain;margin:0 auto;display:block" alt="Timbre"><p style="font-size:10px;color:#0f6e56;margin-top:4px">✓ Timbre OK</p>'; generarSelloUnificado(); }); }
+
+function borrarFirma() { firmaB64 = ''; document.getElementById('sig-zone').innerHTML = '<i class="ti ti-writing"></i><p>1. Subir Firma</p>'; generarSelloUnificado(); }
+function borrarTimbre() { timbreB64 = ''; document.getElementById('stamp-zone').innerHTML = '<i class="ti ti-stamp"></i><p>2. Subir Timbre</p>'; generarSelloUnificado(); }
+
+function guardar(){ 
+  var actual = { nombre: cfg('cfg-nombre'), cargo: cfg('cfg-cargo'), inst: cfg('cfg-inst'), mail: cfg('cfg-mail'), firma: firmaB64, timbre: timbreB64, sello: selloUnificadoB64 };
+  localStorage.setItem('remitenteActualSaludPM', JSON.stringify(actual));
+  actualizarCajaPreview(); if(curIdx >= 0) renderCarta(); toast('Remitente aplicado'); 
+}
+
+// ── CONTROLADORES DE EVENTOS DE LA TABLA JURÍDICA ─────────────────────
+function updateTrackText(idx, field, val) {
+  var rut = funcList[idx].rut;
+  if (!seguimientoData[rut]) seguimientoData[rut] = { folio: '', empresa: '', track: '', recepcion: '', apelado: false };
+  seguimientoData[rut][field] = val;
+  localStorage.setItem('seguimientoSaludPM_v3', JSON.stringify(seguimientoData));
+  if (curIdx === idx && field === 'folio') renderCarta();
+}
+
+function updateTrackStateful(idx, field, val) {
+  var rut = funcList[idx].rut;
+  if (!seguimientoData[rut]) seguimientoData[rut] = { folio: '', empresa: '', track: '', recepcion: '', apelado: false };
+  seguimientoData[rut][field] = val;
+  localStorage.setItem('seguimientoSaludPM_v3', JSON.stringify(seguimientoData));
+  buildCartasTable(); 
+  if (curIdx === idx) renderCarta();
+}
+
+function updateTrackCheckbox(idx, checked) {
+  var rut = funcList[idx].rut;
+  if (!seguimientoData[rut]) seguimientoData[rut] = { folio: '', empresa: '', track: '', recepcion: '', apelado: false };
+  seguimientoData[rut].apelado = checked;
+  localStorage.setItem('seguimientoSaludPM_v3', JSON.stringify(seguimientoData));
+  buildCartasTable(); 
+  if (curIdx === idx) renderCarta();
+}
+
+// ── EVALUADOR DE PLAZO EN TIEMPO REAL ─────────────────────────────────
+function obtenerEstadoPlazo(d) {
+  if (d.apelado) {
+    return '<span class="badge ba" style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:4px 8px;font-size:11px">✓ APELACIÓN RECIBIDA</span>';
+  }
+  if (!d.empresa) {
+    return '<span class="badge bo" style="background:#f1efe8;color:#888;padding:4px 8px">Falta asignar envío</span>';
+  }
+  if (d.empresa !== 'Entrega Personal' && !d.recepcion) {
+    return '<span class="badge" style="background:#eef2f6;color:#1e4d8c;border:1px dashed #b8cce4;padding:4px 8px">⏳ En tránsito postal...</span>';
+  }
+
+  var fechaArranqueIso = (d.empresa === 'Entrega Personal' && !d.recepcion) 
+    ? new Date().toISOString().split('T')[0] 
+    : d.recepcion;
+
+  if (!fechaArranqueIso) return '';
+
+  var limite = sumar5DiasHabiles(fechaArranqueIso);
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var calcLimite = new Date(limite.getTime()); calcLimite.setHours(0,0,0,0);
+
+  var diffDays = Math.ceil((calcLimite - hoy) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return '<span class="badge br" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;padding:4px 8px;font-size:11px;font-weight:bold">🔴 PLAZO VENCIDO</span>';
+  } else if (diffDays === 0) {
+    return '<span class="badge" style="background:#fff3cd;color:#856404;border:1px solid #ffeeba;padding:4px 8px;font-size:11px;font-weight:bold">⚠️ VENCE HOY</span>';
+  } else {
+    return '<span class="badge ba" style="background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb;padding:4px 8px">🟢 Vence: ' + formatearFechaCorta(limite) + ' (' + diffDays + 'd)</span>';
+  }
+}
+
+function buildCartasTable() {
+  if (!funcList.length) {
+    document.getElementById('cartas-table-container').innerHTML = '<div class="empty-state"><i class="ti ti-file-off"></i><p>Cargue datos para ver las cartas a emitir</p></div>';
+    document.getElementById('carta-preview-section').style.display = 'none';
+    return;
+  }
+  
+  var html = '<table class="dt" style="margin:0"><thead><tr>' +
+    '<th style="width:23%">Funcionario (Licencias)</th>' +
+    '<th style="width:27%">Despacho (Folio / Empresa / Tracking)</th>' +
+    '<th style="width:21%">Notificación y Trámite</th>' +
+    '<th style="width:17%; text-align:center">Estado Legal</th>' +
+    '<th style="width:12%; text-align:right">Acciones</th>' +
+    '</tr></thead><tbody>';
+
+  funcList.forEach(function(f, i) {
+    var d = seguimientoData[f.rut] || { folio: '', empresa: '', track: '', recepcion: '', apelado: false };
+    var licsBadge = '<span class="badge" style="background:#eef2f6; color:#555; font-size:10px">' + f.lics.length + ' lic.</span>';
+    var badgeEstado = obtenerEstadoPlazo(d);
+
+    html += '<tr>' +
+      '<td><strong style="color:#1e4d8c">' + f.nombre + '</strong> ' + licsBadge + '<br><small style="color:#666">' + f.rut + '</small></td>' +
+      '<td style="vertical-align:top">' +
+        '<div style="display:flex; gap:4px; margin-bottom:4px">' +
+          '<input type="text" class="tbl-input" style="width:65px; font-weight:600; color:#0c447c" placeholder="Folio..." value="' + d.folio + '" onchange="updateTrackText(' + i + ', \'folio\', this.value)">' +
+          '<select class="tbl-input" style="flex:1" onchange="updateTrackStateful(' + i + ', \'empresa\', this.value)">' +
+            '<option value="" ' + (d.empresa === '' ? 'selected' : '') + '>— Seleccionar Envío —</option>' +
+            '<option value="Chilexpress" ' + (d.empresa === 'Chilexpress' ? 'selected' : '') + '>Chilexpress</option>' +
+            '<option value="Correos de Chile" ' + (d.empresa === 'Correos de Chile' ? 'selected' : '') + '>Correos de Chile</option>' +
+            '<option value="Starken" ' + (d.empresa === 'Starken' ? 'selected' : '') + '>Starken</option>' +
+            '<option value="Entrega Personal" ' + (d.empresa === 'Entrega Personal' ? 'selected' : '') + '>Entrega Personal (Mano)</option>' +
+          '</select>' +
+        '</div>' +
+        '<input type="text" class="tbl-input" placeholder="N° de seguimiento postal..." value="' + d.track + '" onchange="updateTrackText(' + i + ', \'track\', this.value)">' +
+      '</td>' +
+      '<td style="vertical-align:top">' +
+        '<input type="date" class="tbl-input" style="margin-bottom:6px; cursor:pointer" title="Fecha de recepción por parte del funcionario" value="' + (d.recepcion || '') + '" onchange="updateTrackStateful(' + i + ', \'recepcion\', this.value)">' +
+        '<label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; color:#0f6e56; font-weight:600; user-select:none">' +
+          '<input type="checkbox" ' + (d.apelado ? 'checked' : '') + ' onchange="updateTrackCheckbox(' + i + ', this.checked)">' +
+          '✓ Presentó apelación' +
+        '</label>' +
+      '</td>' +
+      '<td style="text-align:center; vertical-align:middle">' + badgeEstado + '</td>' +
+      '<td style="white-space:nowrap; text-align:right; vertical-align:middle">' +
+        '<button class="tbl-btn" style="margin-bottom:4px; width:100%" onclick="verCarta(' + i + ')"><i class="ti ti-eye"></i> Previa</button><br>' +
+        '<button class="tbl-btn primary" style="width:100%" onclick="descargarUnaCarta(' + i + ')"><i class="ti ti-download"></i> PDF</button>' +
+      '</td>' +
+    '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('cartas-table-container').innerHTML = html;
+}
+
+function verCarta(idx) {
+  curIdx = idx;
+  document.getElementById('carta-preview-section').style.display = 'block';
+  renderCarta();
+  document.getElementById('carta-preview-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── REDACCIÓN INTELIGENTE DEL PDF SEGÚN TIPO DE DESPACHO ──────────────
+function buildCartaHTML(func){
+  var hoy = new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'});
+  var nombre = cfg('cfg-nombre'), cargo = cfg('cfg-cargo'), inst = cfg('cfg-inst'), mail = cfg('cfg-mail');
+
+  var d = seguimientoData[func.rut] || {};
+  var numeroFolio = d.folio ? d.folio : '_________';
+
+  var filas=func.lics.map(function(l){
+    return '<tr><td style="padding:7px 10px;border:1px solid #000;font-size:12px">'+l.nlic+'</td><td style="padding:7px 10px;border:1px solid #000;font-size:12px;text-align:center">'+l.fi+'</td><td style="padding:7px 10px;border:1px solid #000;font-size:12px;text-align:center">'+l.ft+'</td><td style="padding:7px 10px;border:1px solid #000;font-size:12px;text-align:center">'+l.dias+'</td><td style="padding:7px 10px;border:1px solid #000;font-size:12px;color:#a32d2d;font-weight:600">'+l.res+'</td></tr>';
+  }).join('');
+
+  var fotoSelloPlano = selloUnificadoB64 ? '<img src="'+selloUnificadoB64+'" style="max-width:230px; max-height:115px; display:block; margin-bottom:4px;" alt="Sello y Firma">' : '<div style="height:45px"></div>';
+  var imagenLogoHTML = '<img src="logo_municipalidad.png" style="max-width:240px; max-height:85px; object-fit:contain; display:block;" alt="Logo Institucional DESAM">';
+
+  // CLAUSULA LEGAL INTELIGENTE
+  var pPlazoHTML = '';
+
+  if (d.empresa === 'Entrega Personal') {
+    var fechaArranque = parseFechaLocal(d.recepcion) || new Date();gi
+    var limite = sumar5DiasHabiles(fechaArranque.toISOString().split('T')[0]);
+    var strLimite = formatearFechaLarga(limite);
+
+    pPlazoHTML = '<p style="margin-bottom:14px; text-align:justify;">Atendido lo anterior, y de conformidad con el <strong>Art. 63 del Decreto N° 3 de 1984 del MINSAL</strong>, se solicita regularizar su situación a la brevedad. A contar de esta notificación, usted dispone de un plazo de <strong>5 días hábiles</strong> para presentar el respectivo Recurso de Reposición ante COMPIN o ISAPRE, venciendo su plazo legal el <strong>' + strLimite + '</strong>.</p>';
+
+  } else if (d.empresa && d.empresa !== '') {
+    // Es un envío postal (Chilexpress, Starken, Correos)
+    pPlazoHTML = '<p style="margin-bottom:14px; text-align:justify;">Atendido lo anterior, y de conformidad con el <strong>Art. 63 del Decreto N° 3 de 1984 del MINSAL</strong>, se solicita regularizar su situación a la brevedad. Conforme a la normativa legal vigente, usted dispone de un plazo legal de <strong>5 días hábiles a contar de la recepción material de la presente Carta Certificada</strong> para interponer el respectivo Recurso de Reposición ante la entidad correspondiente (COMPIN o ISAPRE).</p>';
+
+  } else {
+    // Genérico por defecto
+    pPlazoHTML = '<p style="margin-bottom:14px; text-align:justify;">Atendido lo anterior, y de conformidad con el <strong>Art. 63 del Decreto N° 3 de 1984 del MINSAL</strong>, se solicita regularizar su situación a la brevedad. Usted dispone de un plazo legal de <strong>5 días hábiles a contar de su notificación</strong> para presentar el respectivo Recurso de Reposición ante la entidad correspondiente (COMPIN o ISAPRE).</p>';
+  }
+
+  var encabezadoModulo = '<table style="width:100%; border-collapse:collapse; margin-bottom:25px; border-bottom:1px solid #eee;">' +
+    '  <tr>' +
+    '    <td style="width:50%; text-align:left; vertical-align:top; padding-bottom:15px;">' + imagenLogoHTML + '</td>' +
+    '    <td style="width:50%; text-align:right; vertical-align:top; font-size:12px; line-height:1.5; color:#222; padding-bottom:15px;">' +
+    '      <strong>ORD. N°:</strong> ' + numeroFolio + '<br>' +
+    '      <strong>MAT.:</strong> Notifica resolución de Licencia Médica.<br><br>' +
+    '      <strong>PUERTO MONTT,</strong> ' + hoy +
+    '    </td>' +
+    '  </tr>' +
+    '</table>';
+
+  var destinatario = '<div style="font-size:13px; margin-bottom:20px; line-height:1.5; color:#222;">' +
+    '<strong>SEÑOR(A):</strong><br>' +
+    '<strong style="font-size:14px; text-transform:uppercase;">' + func.nombre + '</strong><br>' +
+    '<strong>PRESENTE</strong>' +
+    '</div>';
+
+  var cuerpo1 = '<p style="margin-bottom:14px; text-align:justify;">Junto con saludar cordialmente, cumplo con informar a usted que, conforme a la revisión de antecedentes de nuestra unidad, a la fecha se registra(n) licencia(s) médica(s) a su nombre con estado <strong>RECHAZADO y/o REDUCIDO</strong>, de acuerdo con el siguiente detalle:</p>';
+
+  var tabla = '<table style="width:100%;border-collapse:collapse;margin:0 0 16px 0"><thead><tr><th style="background:#b8cce4;color:#0c447c;font-weight:600;padding:8px 10px;border:1px solid #000;text-align:left;font-size:12px">N° Licencia</th><th style="background:#b8cce4;color:#0c447c;font-weight:600;padding:8px 10px;border:1px solid #000;text-align:center;font-size:12px">Fecha Inicio</th><th style="background:#b8cce4;color:#0c447c;font-weight:600;padding:8px 10px;border:1px solid #000;text-align:center;font-size:12px">Fecha Término</th><th style="background:#b8cce4;color:#0c447c;font-weight:600;padding:8px 10px;border:1px solid #000;text-align:center;font-size:12px">Días</th><th style="background:#b8cce4;color:#0c447c;font-weight:600;padding:8px 10px;border:1px solid #000;text-align:left;font-size:12px">Estado</th></tr></thead><tbody>'+filas+'</tbody></table>';
+
+  var cuerpo2 = pPlazoHTML +
+    '<p style="margin-bottom:14px; text-align:justify;">Para fines administrativos, y <strong>con el objeto de suspender el proceso de descuento en su remuneración</strong>, usted deberá remitir copia del comprobante de ingreso de dicha apelación al correo electrónico <strong><a href="mailto:'+mail+'" style="color:#1e4d8c; text-decoration:none">'+mail+'</a></strong> dentro del plazo señalado.</p>' +
+    '<p style="margin-bottom:25px; text-align:justify;">Se adjunta a la presente el detalle de plazos, plataformas de apelación y normativa vigente.</p>';
+
+  var firmaBloque = '<div style="page-break-inside: avoid;"><p style="margin-bottom:35px;">Saluda atentamente a usted,</p><div style="text-align:left;">'+fotoSelloPlano+'<p style="margin:0;font-weight:600;font-size:13px;color:#222;text-transform:uppercase;">'+nombre+'</p><p style="margin:0;font-size:12px;color:#555">'+cargo+'</p><p style="margin:0;font-size:12px;color:#555;text-transform:uppercase;">'+inst+'</p></div></div>';
+
+  var carta = '<div style="font-family:Arial,sans-serif;font-size:13px;line-height:1.6;color:#222;max-width:680px;padding:8px 0;margin:0 auto;">' + encabezadoModulo + destinatario + cuerpo1 + tabla + cuerpo2 + firmaBloque + '</div>';
+
+  var anexo = '<div style="page-break-before: always; margin-top:40px; font-family:Arial,sans-serif; font-size:13px; line-height:1.6; color:#222; max-width:680px; margin: 40px auto 0;">' +
+    '<h2 style="text-align: center; color: #1e4d8c; margin: 0; font-size: 16px;">LICENCIAS MÉDICAS</h2><p style="text-align: center; color: #1e4d8c; margin: 0 0 10px 0; font-size: 12px; text-transform:uppercase;">' + inst + '</p><hr style="border: 0; border-top: 2px solid #1e4d8c; margin-bottom: 20px;">' +
+    '<div style="background: #1e4d8c; color: #fff; padding: 6px 10px; font-weight: bold; margin-bottom: 10px;">1. RECURSOS DISPONIBLES PARA GESTIÓN</div>' +
+    '<p style="margin-bottom: 8px;"><b>1°.</b> Usted puede presentar un <b>Recurso de Reposición</b> respecto de su licencia médica rechazada o reducida en la plataforma <b>www.milicenciamedica.cl</b>.</p>' +
+    '<p style="margin-bottom: 8px;"><b>2°.</b> En caso de que dicho recurso sea rechazado, podrá interponer un <b>Recurso de Apelación</b> ante la Superintendencia de Seguridad Social (SUSESO), disponible en <b>www.suseso.cl</b>.</p>' +
+    '<p style="margin-bottom: 20px;">Para fines administrativos, deberá remitir copia del formulario que acredite estar en trámite al correo <b>' + mail + '</b> dentro de los plazos establecidos, a fin de evitar el descuento de sus días.</p>' +
+    '<div style="background: #1e4d8c; color: #fff; padding: 6px 10px; font-weight: bold; margin-bottom: 10px;">2. PLAZOS Y ENTIDADES COMPETENTES</div>' +
+    '<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; text-align: center;">' +
+      '<thead><tr><th style="background:#1e4d8c;color:#fff;border:1px solid #000;padding:8px;">SOLICITUD</th><th style="background:#1e4d8c;color:#fff;border:1px solid #000;padding:8px;">ENTIDAD</th><th style="background:#1e4d8c;color:#fff;border:1px solid #000;padding:8px;">FONASA</th><th style="background:#1e4d8c;color:#fff;border:1px solid #000;padding:8px;">ISAPRE</th></tr></thead>' +
+      '<tbody>' +
+        '<tr><td style="border:1px solid #000;padding:8px;font-weight:bold;vertical-align:middle;">RECURSO DE<br>REPOSICIÓN</td><td style="border:1px solid #000;padding:8px;text-align:left;vertical-align:middle;">COMPIN (Comisión de Medicina Preventiva e Invalidez)<br>www.milicenciamedica.cl<br>FONO: 6003607777</td><td style="border:1px solid #000;padding:8px;font-weight:bold;vertical-align:middle;">5 DÍAS<br>HÁBILES</td><td style="border:1px solid #000;padding:8px;font-weight:bold;vertical-align:middle;">15 DÍAS<br>HÁBILES</td></tr>' +
+        '<tr><td style="background:#b8cce4;border:1px solid #000;padding:6px;font-weight:bold;text-align:center;" colspan="4">PLAZOS DESDE LA NOTIFICACIÓN</td></tr>' +
+        '<tr><td style="border:1px solid #000;padding:8px;font-weight:bold;vertical-align:middle;">RECURSO DE<br>APELACIÓN</td><td style="border:1px solid #000;padding:8px;text-align:left;vertical-align:middle;">SUSESO (Superintendencia de Seguridad Social)<br>www.suseso.cl<br>FONO: 226204500</td><td style="border:1px solid #000;padding:8px;font-weight:bold;vertical-align:middle;">6 MESES</td><td style="border:1px solid #000;padding:8px;font-weight:bold;vertical-align:middle;">6 MESES</td></tr>' +
+      '</tbody>' +
+    '</table>' +
+    '<div style="background: #1e4d8c; color: #fff; padding: 6px 10px; font-weight: bold; margin-bottom: 10px;">3. CONSIDERACIONES LEGALES Y ADMINISTRATIVAS</div>' +
+    '<ol style="margin-left: 20px; padding-left: 0; margin-bottom: 10px;">' +
+      '<li style="margin-bottom: 6px;">La ISAPRE o la COMPIN notifican el estado de las licencias médicas mediante <b>carta certificada o correo electrónico</b>.</li>' +
+      '<li style="margin-bottom: 6px;">La presentación fuera de plazo habilita a la entidad para rechazarlas de plano, salvo acreditación de fuerza mayor.</li>' +
+      '<li style="margin-bottom: 6px;">El <b>Art. 63 del Decreto N° 3 de 1984 del MINSAL</b> establece la obligación de devolver los dineros indebidamente percibidos en caso de rechazo.</li>' +
+      '<li style="margin-bottom: 6px;">La jurisprudencia de la <b>Contraloría General de la República</b> dispone que:<ul style="margin-top: 6px; margin-bottom: 0;"><li style="margin-bottom: 4px;">Las ausencias por licencias rechazadas se consideran <b>inasistencias injustificadas</b>.</li><li style="margin-bottom: 4px;">Procede el <b>descuento de remuneraciones</b> o la exigencia de devolución.</li><li style="margin-bottom: 4px;">El descuento solo se hará efectivo una vez que la resolución sea ratificada por COMPIN.</li></ul></li>' +
+    '</ol>' +
+    '<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0 10px 0;">' +
+    '<p style="text-align: center; font-size: 11px; color: #1e4d8c; font-weight: bold;">Para consultas o remisión de comprobantes: ' + mail + '</p>' +
+  '</div>';
+
+  return carta + anexo;
+}
+
+function renderCarta(){
+  if(curIdx < 0 || !funcList[curIdx]) return;
+  document.getElementById('carta-container').innerHTML='<div style="background:#fff;border:0.5px solid #ccc;border-radius:8px;padding:1.25rem">'+buildCartaHTML(funcList[curIdx])+'</div>';
+}
+
+function copiar(){
+  if(curIdx < 0 || !funcList[curIdx]) return;
+  var html=buildCartaHTML(funcList[curIdx]);
+  try{
+    var blob=new Blob([html],{type:'text/html'});
+    navigator.clipboard.write([new ClipboardItem({'text/html':blob})]).then(function(){toast('Carta copiada — lista para pegar en Outlook');});
+  }catch(e){
+    var ta=document.createElement('textarea');ta.value=html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    toast('Copiado en texto plano');
+  }
+}
+
+function abrirPDF(htmlContent, fileName){
+  var element = document.createElement('div');
+  element.innerHTML = htmlContent;
+  element.style.padding = "2cm";
+  element.style.fontFamily = "Arial, sans-serif";
+  
+  var opt = {
+    margin:       0,
+    filename:     fileName || 'Carta_Licencia_Medica.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+
+  toast('Generando y descargando PDF...');
+  html2pdf().set(opt).from(element).save();
+}
+
+function expPDF(){ 
+  if(curIdx < 0 || !funcList[curIdx]) return; 
+  var d = seguimientoData[funcList[curIdx].rut] || {};
+  var fName = 'Carta_Folio_' + (d.folio || 'S-N') + '_' + funcList[curIdx].rut + '.pdf';
+  abrirPDF(buildCartaHTML(funcList[curIdx]), fName); 
+}
+
+function descargarUnaCarta(idx) {
+  if(isNaN(idx)||!funcList[idx]) return; 
+  var d = seguimientoData[funcList[idx].rut] || {};
+  var fName = 'Carta_Folio_' + (d.folio || 'S-N') + '_' + funcList[idx].rut + '.pdf';
+  abrirPDF(buildCartaHTML(funcList[idx]), fName);
+}
+
+function expTodas(){ 
+  if(!funcList.length) return; 
+  var html = funcList.map(function(f, i){
+    return buildCartaHTML(f) + (i < funcList.length - 1 ? '<div style="page-break-after:always;margin:0;padding:0"></div>' : '');
+  }).join(''); 
+  abrirPDF(html, 'Todas_las_Cartas_DESAM.pdf'); 
+}
+
+var dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.style.borderColor='#1e4d8c'}); dz.addEventListener('dragleave',function(){dz.style.borderColor=''});
+dz.addEventListener('drop',function(e){ e.preventDefault();dz.style.borderColor=''; var f=e.dataTransfer.files[0];if(!f)return; var dt=new DataTransfer();dt.items.add(f); document.getElementById('file-input').files=dt.files; handleFile(document.getElementById('file-input')); });
+</script>
+
+</body>
+</html>
